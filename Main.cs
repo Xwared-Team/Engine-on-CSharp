@@ -39,6 +39,10 @@ class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameW
 
     float _rotateObject;
 
+    // Light
+    int _lightPosLoc, _lightColorLoc, _objectColorLoc;
+    Vector3 _lightPos = new Vector3(10f, 10f, 10f);
+
     void CheckShaderCompilation(int shaderId)
     {   
         GL.GetShader(shaderId, ShaderParameter.CompileStatus, out int success);
@@ -81,8 +85,13 @@ class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameW
                       model.Indices,
                       BufferUsageHint.StaticDraw);
 
-        GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
+        int stride = 6 * sizeof(float);
+
+        GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, stride, 0);
         GL.EnableVertexAttribArray(0);
+
+        GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, stride, 3 * sizeof(float));
+        GL.EnableVertexAttribArray(1);
 
         ReadedVertFile = File.ReadAllText("./Assets/shaders/shader.vert");
         vertexShader = GL.CreateShader(ShaderType.VertexShader);
@@ -105,6 +114,10 @@ class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameW
 
         GL.DeleteShader(vertexShader);
         GL.DeleteShader(fragmentShader);
+
+        _lightPosLoc = GL.GetUniformLocation(_handle, "lightPos");
+        _lightColorLoc = GL.GetUniformLocation(_handle, "lightColor");
+        _objectColorLoc = GL.GetUniformLocation(_handle, "objectColor");
 
         _modelLoc = GL.GetUniformLocation(_handle, "model");
         _viewLoc = GL.GetUniformLocation(_handle, "view");
@@ -173,9 +186,13 @@ class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameW
 
         _rotateObject += 0.1f;
 
-        _model = Matrix4.CreateScale(0.1f) * 
-                 Matrix4.CreateTranslation(0, 0, 12) * 
-                 Matrix4.CreateRotationY(MathHelper.DegreesToRadians(_rotateObject));
+        _model = Matrix4.CreateTranslation(0, 0, 12) * 
+                 Matrix4.CreateRotationY(MathHelper.DegreesToRadians(_rotateObject)) * 
+                 Matrix4.CreateScale(0.1f);
+
+        GL.Uniform3(_lightPosLoc, _lightPos);
+        GL.Uniform3(_lightColorLoc, new Vector3(1f, 1f, 1f));
+        GL.Uniform3(_objectColorLoc, new Vector3(1f, 0.5f, 0.31f));
 
         // Grachic Logic
         GL.ClearColor(0, 0, 0, 1);
@@ -188,7 +205,6 @@ class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameW
         GL.UniformMatrix4(_viewLoc, false, ref _view);
         GL.UniformMatrix4(_projLoc, false, ref _projection);
 
-        GL.PolygonMode(TriangleFace.FrontAndBack, PolygonMode.Line);
         GL.DrawElements(PrimitiveType.Triangles, _indexCount, DrawElementsType.UnsignedInt, IntPtr.Zero);
 
         Context.SwapBuffers();
