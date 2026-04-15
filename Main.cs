@@ -4,7 +4,6 @@ using OpenTK.Windowing.Desktop;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.Common;
 using OpenTK.Mathematics;
-using System.Drawing;
 
 [SupportedOSPlatform("windows")]
 class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameWindow(gSettings, nSettings)
@@ -42,6 +41,11 @@ class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameW
     // Light
     int _lightPosLoc, _lightColorLoc, _objectColorLoc;
     Vector3 _lightPos = new Vector3(10f, 10f, 10f);
+    float _lightAngle = 0f;
+    float _lightRadius = 15f;
+
+    // SkyBox
+    Skybox? _skybox;
 
     void CheckShaderCompilation(int shaderId)
     {   
@@ -61,6 +65,19 @@ class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameW
         CursorState = CursorState.Grabbed;
         WindowState = WindowState.Fullscreen;
         GL.Enable(EnableCap.DepthTest);
+
+        // SkyBox
+        string[] skyboxFaces = 
+        {
+            "./Assets/SkyBox/right.png",
+            "./Assets/SkyBox/left.png",
+            "./Assets/SkyBox/top.png",
+            "./Assets/SkyBox/bottom.png",
+            "./Assets/SkyBox/front.png",
+            "./Assets/SkyBox/back.png"
+};
+
+        _skybox = new Skybox(skyboxFaces);
 
         ObjModel model = ObjLoader.Load("./Assets/3D_objects/teapol.obj");
 
@@ -93,11 +110,11 @@ class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameW
         GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, stride, 3 * sizeof(float));
         GL.EnableVertexAttribArray(1);
 
-        ReadedVertFile = File.ReadAllText("./Assets/shaders/shader.vert");
+        ReadedVertFile = File.ReadAllText("./Assets/shaders/main/shader.vert");
         vertexShader = GL.CreateShader(ShaderType.VertexShader);
         GL.ShaderSource(vertexShader, ReadedVertFile);
 
-        ReadedFragFile = File.ReadAllText("./Assets/shaders/shader.frag");
+        ReadedFragFile = File.ReadAllText("./Assets/shaders/main/shader.frag");
         fragmentShader = GL.CreateShader(ShaderType.FragmentShader);
         GL.ShaderSource(fragmentShader, ReadedFragFile);
 
@@ -184,19 +201,28 @@ class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameW
         Vector3 target = _camPos + front;
         _view = Matrix4.LookAt(_camPos, target, up);
 
-        _rotateObject += 0.1f;
-
-        _model = Matrix4.CreateTranslation(0, 0, 12) * 
-                 Matrix4.CreateRotationY(MathHelper.DegreesToRadians(_rotateObject)) * 
+        _model = Matrix4.CreateRotationY(MathHelper.DegreesToRadians(_rotateObject)) * 
                  Matrix4.CreateScale(0.1f);
+
+        _rotateObject += 0.1f;
+        float angularSpeed = (2f * MathHelper.Pi) / 10f;
+        _lightAngle += angularSpeed * (float)e.Time;
+
+        float lightX = _lightRadius * MathF.Cos(_lightAngle);
+        float lightZ = _lightRadius * MathF.Sin(_lightAngle);
+        float lightY = 10.0f; 
+
+        _lightPos = new Vector3(lightX, lightY, lightZ);
 
         GL.Uniform3(_lightPosLoc, _lightPos);
         GL.Uniform3(_lightColorLoc, new Vector3(1f, 1f, 1f));
-        GL.Uniform3(_objectColorLoc, new Vector3(1f, 0.5f, 0.31f));
+        GL.Uniform3(_objectColorLoc, new Vector3(0f, 0.5f, 0.71f));
 
         // Grachic Logic
         GL.ClearColor(0, 0, 0, 1);
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+
+        _skybox!.Draw(_view, _projection);
 
         GL.UseProgram(_handle);
         GL.BindVertexArray(_vertexArrayObject);
