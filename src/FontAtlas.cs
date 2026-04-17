@@ -6,7 +6,6 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using OpenTK.Graphics.OpenGL4;
-using SixLabors.Fonts;
 using PixelFormat = OpenTK.Graphics.OpenGL4.PixelFormat;
 
 [SupportedOSPlatform("windows")]
@@ -29,9 +28,9 @@ public class FontAtlas : IDisposable
 
     private void GenerateAtlas(string fontPath, int fontSize)
     {
-        var collection = new FontCollection();
-        var family = collection.Add(fontPath);
-        var font = family.CreateFont(fontSize, SixLabors.Fonts.FontStyle.Regular);
+        using var pfc = new System.Drawing.Text.PrivateFontCollection();
+        pfc.AddFontFile(fontPath);
+        var family = pfc.Families[0];
 
         using var bitmap = new Bitmap(Width, Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
         using var graphics = Graphics.FromImage(bitmap);
@@ -39,55 +38,59 @@ public class FontAtlas : IDisposable
         graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
         graphics.Clear(Color.Transparent);
 
-        float currentX = 0;
-        float currentY = 0;
+        var format = StringFormat.GenericTypographic;
+        format.FormatFlags |= StringFormatFlags.MeasureTrailingSpaces;
+
+        float currentX = 2;
+        float currentY = 2;
         float maxHeightInRow = 0;
-        float padding = 2.0f;
+        float padding = 4.0f;
+
+        using var drawFont = new System.Drawing.Font(family, fontSize);
 
         foreach (char c in Charset)
         {
             string s = c.ToString();
             
-            SizeF size = graphics.MeasureString(s, new System.Drawing.Font(family.Name, fontSize));
+            SizeF size = graphics.MeasureString(s, drawFont, PointF.Empty, format);
             
             if (currentX + size.Width > Width)
             {
-                currentX = 0;
+                currentX = 2;
                 currentY += maxHeightInRow + padding;
                 maxHeightInRow = 0;
             }
             
             if (currentY + size.Height > Height)
             {
-                Console.WriteLine($"Warning: Font atlas overflow at character '{c}'. Increase atlas size.");
+                Console.WriteLine($"Warning: Font atlas overflow! Не влез символ '{c}'");
                 break;
             }
 
-            using (var drawFont = new System.Drawing.Font(family.Name, fontSize))
-            {
-                graphics.DrawString(s, drawFont, Brushes.White, currentX, currentY);
-            }
+            graphics.DrawString(s, drawFont, Brushes.White, currentX, currentY, format);
 
             float u = currentX / Width;
             float v = currentY / Height;
             float w = size.Width / Width;
             float h = size.Height / Height;
-            float advance = size.Width + padding; 
+            
+            float advance = size.Width; 
 
             _glyphs[c] = new GlyphData(c, u, v, w, h, 0, 0, advance);
 
-            currentX += advance;
+            currentX += size.Width + padding;
             if (size.Height > maxHeightInRow) maxHeightInRow = size.Height;
         }
 
-        string outputPath = "generated_atlas.png";
-        string? dirName = Path.GetDirectoryName(outputPath);
-        if (!string.IsNullOrEmpty(dirName))
+        if (Main.debug_mod)
         {
-            Directory.CreateDirectory(dirName);
+            string outputPath = "./debug/generated_atlas.png";
+            Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
+            bitmap.Save(outputPath, ImageFormat.Png);
+            
+            Console.WriteLine($"Atlas generated with font: {family.Name}");   
         }
-        bitmap.Save(outputPath, ImageFormat.Png);
-        Console.WriteLine($"Font atlas saved to: {outputPath}");
+
         LoadTextureToOpenGL(bitmap);
     }
 

@@ -7,7 +7,9 @@ using OpenTK.Mathematics;
 
 [SupportedOSPlatform("windows")]
 class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameWindow(gSettings, nSettings)
-{
+{   
+    public static bool debug_mod = false;
+
     int _vertexBufferObject;
     int _vertexArrayObject;
     int _elementBufferObject;
@@ -47,6 +49,9 @@ class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameW
     // SkyBox
     Skybox? _skybox;
 
+    // Text
+    private TextRenderer? _textRenderer;
+
     void CheckShaderCompilation(int shaderId)
     {   
         GL.GetShader(shaderId, ShaderParameter.CompileStatus, out int success);
@@ -75,8 +80,15 @@ class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameW
             "./Assets/SkyBox/bottom.png",
             "./Assets/SkyBox/front.png",
             "./Assets/SkyBox/back.png"
-};
+        };
 
+        // Text
+        _textRenderer = new TextRenderer(
+            "./Assets/fonts/VCR-OSD-MONO.ttf",
+            32,
+            "./Assets/shaders/text/shader.vert",
+            "./Assets/shaders/text/shader.frag"
+        );
         _skybox = new Skybox(skyboxFaces);
 
         ObjModel model = ObjLoader.Load("./Assets/3D_objects/teapol.obj");
@@ -202,7 +214,7 @@ class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameW
         _view = Matrix4.LookAt(_camPos, target, up);
 
         _model = Matrix4.CreateRotationY(MathHelper.DegreesToRadians(_rotateObject)) * 
-                 Matrix4.CreateScale(0.1f);
+                 Matrix4.CreateScale(0.25f);
 
         _rotateObject += 0.1f;
         float angularSpeed = (2f * MathHelper.Pi) / 10f;
@@ -232,6 +244,14 @@ class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameW
         GL.UniformMatrix4(_projLoc, false, ref _projection);
 
         GL.DrawElements(PrimitiveType.Triangles, _indexCount, DrawElementsType.UnsignedInt, IntPtr.Zero);
+
+        if (_textRenderer != null)
+        {
+            Matrix4 ortho = Matrix4.CreateOrthographicOffCenter(0, Size.X, Size.Y, 0, -1, 1);
+            _textRenderer.DrawString("EOCS Engine V0.0.4", 10, 10, 1f, ortho, 1f); 
+            _textRenderer.DrawString("Create by Dovintc", 10, 50, 1f, ortho, 1f); 
+            _textRenderer.DrawString($"FPS: {(1.0 / e.Time):F1}", 10, 90, 1f, ortho, 1f); 
+        }
 
         Context.SwapBuffers();
     }

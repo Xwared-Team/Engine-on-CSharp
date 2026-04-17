@@ -15,7 +15,7 @@ class Program{
         };
 
         var gameSettings = new GameWindowSettings(){
-            UpdateFrequency = 60.0,   
+            // UpdateFrequency = 60.0,   
         };
 
         using var game = new Main(gameSettings, nativeSettings);
