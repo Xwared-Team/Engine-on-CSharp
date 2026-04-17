@@ -1,23 +1,24 @@
-﻿// Game Create By Dov1nt (Xwared Team)
-// Game Create By Dov1nt (Xwared Team)
-// Game Create By Dov1nt (Xwared Team)
-using BPX;
+﻿using EOCS;
+using System.Runtime.Versioning;
 using OpenTK.Windowing.Desktop;
-namespace BCX;
+using OpenTK.Mathematics;
+namespace EOCS;
 
+[SupportedOSPlatform("windows")]
 class Program{
-    [Obsolete]
     static void Main()
     {
-        var nativeSettings = NativeWindowSettings.Default;
-        nativeSettings.Size = new OpenTK.Mathematics.Vector2i(1200, 900);
-        nativeSettings.Title = "RGB triangle";
+        var nativeSettings = new NativeWindowSettings(){
+            ClientSize = new Vector2i(1200, 900),
+            Title = "EOCS (Engine On CSharp)",
+            APIVersion = new Version(3, 3)
+        };
 
-        var gameSettings = GameWindowSettings.Default;
+        var gameSettings = new GameWindowSettings(){
+            UpdateFrequency = 60.0,   
+        };
 
-        using (var game = new Main(gameSettings, nativeSettings))
-        {
-            game.Run();
-        }
+        using var game = new Main(gameSettings, nativeSettings);
+        game.Run();
     }
 }

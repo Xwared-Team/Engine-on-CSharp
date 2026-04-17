@@ -1,11 +1,9 @@
-using System;
 using System.Drawing;
-using System.IO;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using System.Runtime.Versioning;
 
-namespace BPX
+namespace EOCS
 {
     [SupportedOSPlatform("windows")]
     public class Skybox

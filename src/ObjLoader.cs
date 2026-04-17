@@ -1,4 +1,4 @@
-namespace BPX;
+namespace EOCS;
 
 using System;
 using System.Collections.Generic;

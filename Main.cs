@@ -1,4 +1,4 @@
-namespace BPX;
+namespace EOCS;
 using System.Runtime.Versioning;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Graphics.OpenGL4;
