@@ -1,6 +1,11 @@
 # Changelog
 # All changes in project EOCS
 
+## [0.0.6] - 2026.04.18
+
+### Fix
+- light
+
 ## [0.0.5] - 2026.04.17
 
 ### Added

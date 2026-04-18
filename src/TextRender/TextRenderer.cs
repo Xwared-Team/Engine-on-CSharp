@@ -124,10 +124,27 @@ public class TextRenderer : IDisposable
             if (_fontAtlas.TryGetGlyph(c, out var glyph))
             {
                 AddCharToBuffer(c, currentX, y, scale);
-                currentX += (glyph.Advance + scale) * spacing;
+                // Обратите внимание: тут у тебя странная формула spacing. 
+                // Обычно: currentX += glyph.Advance * scale + spacing;
+                currentX += (glyph.Advance + spacing) * scale; 
             }
         }
 
+        float[] vertices = _vertexBuffer.ToArray();
+        if (vertices.Length == 0) return;
+
+        // --- СОХРАНЕНИЕ СОСТОЯНИЯ (частичное) ---
+        
+        // 1. Включаем блендинг для прозрачности текста
+        GL.Enable(EnableCap.Blend);
+        GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+        
+        // 2. Отключаем тест глубины, чтобы текст всегда был поверх всего, 
+        // и не писал в буфер глубины, чтобы не "прятать" объекты за собой
+        GL.Disable(EnableCap.DepthTest);
+        GL.DepthMask(false); 
+
+        // 3. Используем шейдер текста
         GL.UseProgram(_shaderProgram);
         GL.UniformMatrix4(_locProjection, false, ref projection);
         
@@ -135,19 +152,31 @@ public class TextRenderer : IDisposable
         GL.BindTexture(TextureTarget.Texture2D, _fontAtlas.TextureID);
         GL.Uniform1(_locTexture, 0);
 
-        GL.Enable(EnableCap.Blend);
-        GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
-
-        float[] vertices = _vertexBuffer.ToArray();
+        // 4. Обновляем буфер и рисуем
         GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
+        // StreamDraw подходит для динамического текста, меняющегося каждый кадр
         GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StreamDraw);
 
         GL.BindVertexArray(_vao);
         GL.DrawArrays(PrimitiveType.Triangles, 0, vertices.Length / 5);
-
+        
+        // --- ВОССТАНОВЛЕНИЕ / ОЧИСТКА ---
+        
         GL.BindVertexArray(0);
+        GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+        
+        // Возвращаем настройки глубины обратно
+        GL.DepthMask(true);
+        GL.Enable(EnableCap.DepthTest); 
+        
+        // Выключаем блендинг, чтобы он не влиял на 3D объекты в следующем кадре, 
+        // если они забудут его включить/выключить явно
         GL.Disable(EnableCap.Blend);
-        GL.UseProgram(0);
+        
+        // ВАЖНО: Не вызывай GL.UseProgram(0) здесь! 
+        // Пусть главный цикл сам решает, какой шейдер использовать следующим.
+        // Или, если хочешь быть чистым, можно оставить UseProgram(0), 
+        // но тогда в OnRenderFrame убедись, что GL.UseProgram(_handle) вызывается ПЕРЕД любой отрисовкой 3D.
     }
 
     public void Dispose()

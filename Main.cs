@@ -4,12 +4,12 @@ using OpenTK.Windowing.Desktop;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.Common;
 using OpenTK.Mathematics;
+using System.Drawing;
 
 [SupportedOSPlatform("windows")]
 class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameWindow(gSettings, nSettings)
-{   
+{
     public static bool debug_mod = false;
-
     int _vertexBufferObject;
     int _vertexArrayObject;
     int _elementBufferObject;
@@ -43,13 +43,9 @@ class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameW
     // Light
     int _lightPosLoc, _lightColorLoc, _objectColorLoc;
     Vector3 _lightPos = new Vector3(10f, 10f, 10f);
-    float _lightAngle = 0f;
-    float _lightRadius = 15f;
 
-    // SkyBox
     Skybox? _skybox;
 
-    // Text
     private TextRenderer? _textRenderer;
 
     void CheckShaderCompilation(int shaderId)
@@ -71,7 +67,8 @@ class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameW
         WindowState = WindowState.Fullscreen;
         GL.Enable(EnableCap.DepthTest);
 
-        // SkyBox
+        ObjModel model = ObjLoader.Load("./Assets/3D_objects/teapol.obj");
+
         string[] skyboxFaces = 
         {
             "./Assets/SkyBox/right.png",
@@ -82,16 +79,14 @@ class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameW
             "./Assets/SkyBox/back.png"
         };
 
-        // Text
+        _skybox = new Skybox(skyboxFaces);
+
         _textRenderer = new TextRenderer(
             "./Assets/fonts/VCR-OSD-MONO.ttf",
             32,
             "./Assets/shaders/text/shader.vert",
             "./Assets/shaders/text/shader.frag"
         );
-        _skybox = new Skybox(skyboxFaces);
-
-        ObjModel model = ObjLoader.Load("./Assets/3D_objects/teapol.obj");
 
         _vertexCount = model.Vertices.Length / 3;
         _indexCount = model.Indices.Length;
@@ -213,36 +208,27 @@ class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameW
         Vector3 target = _camPos + front;
         _view = Matrix4.LookAt(_camPos, target, up);
 
-        _model = Matrix4.CreateRotationY(MathHelper.DegreesToRadians(_rotateObject)) * 
-                 Matrix4.CreateScale(0.25f);
-
         _rotateObject += 0.1f;
-        float angularSpeed = (2f * MathHelper.Pi) / 10f;
-        _lightAngle += angularSpeed * (float)e.Time;
+        _model = Matrix4.CreateTranslation(0, 0, 12) * 
+                 Matrix4.CreateRotationY(MathHelper.DegreesToRadians(_rotateObject)) * 
+                 Matrix4.CreateScale(0.1f);
 
-        float lightX = _lightRadius * MathF.Cos(_lightAngle);
-        float lightZ = _lightRadius * MathF.Sin(_lightAngle);
-        float lightY = 10.0f; 
-
-        _lightPos = new Vector3(lightX, lightY, lightZ);
-
-        GL.Uniform3(_lightPosLoc, _lightPos);
-        GL.Uniform3(_lightColorLoc, new Vector3(1f, 1f, 1f));
-        GL.Uniform3(_objectColorLoc, new Vector3(0f, 0.5f, 0.71f));
-
-        // Grachic Logic
-        GL.ClearColor(0, 0, 0, 1);
+        GL.ClearColor(0.1f, 0.1f, 0.1f, 1);
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
         _skybox!.Draw(_view, _projection);
 
         GL.UseProgram(_handle);
-        GL.BindVertexArray(_vertexArrayObject);
+        
+        GL.Uniform3(_lightPosLoc, _lightPos);
+        GL.Uniform3(_lightColorLoc, new Vector3(1f, 1f, 1f));
+        GL.Uniform3(_objectColorLoc, new Vector3(1f, 0.5f, 0.31f));
 
         GL.UniformMatrix4(_modelLoc, false, ref _model);
         GL.UniformMatrix4(_viewLoc, false, ref _view);
         GL.UniformMatrix4(_projLoc, false, ref _projection);
 
+        GL.BindVertexArray(_vertexArrayObject);
         GL.DrawElements(PrimitiveType.Triangles, _indexCount, DrawElementsType.UnsignedInt, IntPtr.Zero);
 
         if (_textRenderer != null)
