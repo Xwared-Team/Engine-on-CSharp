@@ -4,7 +4,7 @@ using OpenTK.Windowing.Desktop;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.Common;
 using OpenTK.Mathematics;
-using System.Drawing;
+using OpenTK.Windowing.GraphicsLibraryFramework;
 
 [SupportedOSPlatform("windows")]
 class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameWindow(gSettings, nSettings)
@@ -36,6 +36,7 @@ class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameW
     float _moveSpeed = 5.0f;
     float _mouseSensitivy = 0.1f;
     bool _GamePaused = false;
+    bool _GameFullscreen = false;
     float FOV = MathHelper.PiOver4;
 
     float _rotateObject;
@@ -64,7 +65,8 @@ class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameW
         base.OnLoad();     
         Context.SwapInterval = 1;
         CursorState = CursorState.Grabbed;
-        WindowState = WindowState.Fullscreen;
+        if (_GameFullscreen) 
+            WindowState = WindowState.Fullscreen;
         GL.Enable(EnableCap.DepthTest);
 
         ObjModel model = ObjLoader.Load("./Assets/3D_objects/teapol.obj");
@@ -167,9 +169,10 @@ class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameW
         _pitch = MathHelper.Clamp(_pitch, -89.9f, 89.9f);
     }
 
-    protected override void OnRenderFrame(FrameEventArgs e)
+    protected override void OnUpdateFrame(FrameEventArgs e)
     {
-        base.OnRenderFrame(e);
+        base.OnUpdateFrame(e);
+
         var input = KeyboardState;
 
         float yawRad = MathHelper.DegreesToRadians(_yaw);
@@ -186,24 +189,23 @@ class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameW
 
         float velocity = _moveSpeed * (float)e.Time;
 
-        if (input.IsKeyDown(OpenTK.Windowing.GraphicsLibraryFramework.Keys.W))
-             _camPos += front * velocity;
-        if (input.IsKeyDown(OpenTK.Windowing.GraphicsLibraryFramework.Keys.S))
-            _camPos -= front * velocity;
-        if (input.IsKeyDown(OpenTK.Windowing.GraphicsLibraryFramework.Keys.A))
-            _camPos -= right * velocity;
-        if (input.IsKeyDown(OpenTK.Windowing.GraphicsLibraryFramework.Keys.D))
-            _camPos += right * velocity;
+        if (input.IsKeyDown(Keys.W)) _camPos += front * velocity;
+        if (input.IsKeyDown(Keys.S)) _camPos -= front * velocity;
+        if (input.IsKeyDown(Keys.A)) _camPos -= right * velocity;
+        if (input.IsKeyDown(Keys.D)) _camPos += right * velocity;
 
-        if (input.IsKeyDown(OpenTK.Windowing.GraphicsLibraryFramework.Keys.Space))
-            _camPos.Y += velocity;
-        if (input.IsKeyDown(OpenTK.Windowing.GraphicsLibraryFramework.Keys.LeftShift))
-            _camPos.Y -= velocity;
+        if (input.IsKeyDown(Keys.Space)) _camPos.Y += velocity;
+        if (input.IsKeyDown(Keys.LeftShift)) _camPos.Y -= velocity;
 
-        if (input.IsKeyReleased(OpenTK.Windowing.GraphicsLibraryFramework.Keys.Escape)){
+        if (input.IsKeyReleased(Keys.Escape)){
             _GamePaused = !_GamePaused;
-            if (_GamePaused){ CursorState = CursorState.Normal; } else { CursorState = CursorState.Grabbed; }
+            if (_GamePaused) CursorState = CursorState.Normal; else CursorState = CursorState.Grabbed;
         }
+        if (input.IsKeyReleased(Keys.F11)){
+            _GameFullscreen = !_GameFullscreen;
+            if (_GameFullscreen) WindowState = WindowState.Fullscreen; else WindowState = WindowState.Normal;
+        }
+        
 
         Vector3 target = _camPos + front;
         _view = Matrix4.LookAt(_camPos, target, up);
@@ -212,7 +214,11 @@ class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameW
         _model = Matrix4.CreateTranslation(0, 0, 12) * 
                  Matrix4.CreateRotationY(MathHelper.DegreesToRadians(_rotateObject)) * 
                  Matrix4.CreateScale(0.1f);
+    }
 
+    protected override void OnRenderFrame(FrameEventArgs e)
+    {
+        base.OnRenderFrame(e);
         GL.ClearColor(0.1f, 0.1f, 0.1f, 1);
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
