@@ -1,4 +1,8 @@
 # EOCS (Engine on CSharp)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![.NET Version](https://img.shields.io/badge/.NET-10.0-blue)](https://dotnet.microsoft.com/)
+[![OpenTK](https://img.shields.io/badge/OpenTK-4.9.4-green)](https://opentk.net/)
+[![Windows](https://img.shields.io/badge/Windows-10%2B-0078D6)](https://www.microsoft.com/windows)
 
 > A simple, open-source 3D game engine built from scratch in C# using OpenTK.
 > **[Wiki of this project](https://github.com/Xwared-Team/Engine-on-CSharp/wiki)**
