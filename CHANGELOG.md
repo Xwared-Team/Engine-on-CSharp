@@ -2,11 +2,6 @@
 # All changes in project EOCS
 # Project create by Dov1ntc!
 
-## [0.1.1] - 2026.04.21
-
-### Changed
-- Improved readability of the debug menu (in code)
-
 ## [0.1.0] - 2026.04.21 (Anniversary!!!)
 
 ### Changed
