@@ -1,8 +1,8 @@
-﻿using EOCS;
+﻿namespace EOCS;
+
 using System.Runtime.Versioning;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Mathematics;
-namespace EOCS;
 
 [SupportedOSPlatform("windows")]
 class Program{
@@ -15,10 +15,10 @@ class Program{
         };
 
         var gameSettings = new GameWindowSettings(){
-            // UpdateFrequency = 60.0,   
+            UpdateFrequency = 60.0,   
         };
 
-        using var game = new Main(gameSettings, nativeSettings);
+        using var game = new EOCS.Main.Main(gameSettings, nativeSettings);
         game.Run();
     }
 }

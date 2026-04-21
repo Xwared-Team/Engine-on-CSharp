@@ -1,5 +1,8 @@
-namespace EOCS;
+// ObjLoader.cs
+namespace EOCS.ObjLoader; // namespace of this file
+using System.Runtime.Versioning; // Allow on Windows
 
+// Usings
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,6 +14,7 @@ public class ObjModel
     public required uint[] Indices { get; set; }
 }
 
+[SupportedOSPlatform("windows")]
 public static class ObjLoader
 {
     public static ObjModel Load(string path)

@@ -1,5 +1,5 @@
-using OpenTK.Mathematics;
-namespace EOCS;
+// TextRender/GlyphData.cs
+namespace EOCS.TextRender.GlyghData; // namespace of this file
 
 public struct GlyphData
 {

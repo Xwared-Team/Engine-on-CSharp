@@ -1,7 +1,18 @@
 # Changelog
 # All changes in project EOCS
+# Project create by Dov1ntc!
 
-## [0.0.7] - 2026-04-21
+## [0.1.0] - 2026.04.21 (Anniversary!!!)
+
+### Changed
+- The menu with additional information opens only when you press f3
+- A menu with additional information displays the position and rotation of the camera
+- Now each file is in its own namespace (render/Mesh.cs -> namespace EOCS.render)
+
+## Added
+- New classes make it easier to create more than one object
+
+## [0.0.7] - 2026.04.21
 
 ### Added
 - F11 toggles fullscreen/windowed mode.

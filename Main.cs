@@ -1,5 +1,14 @@
-namespace EOCS;
-using System.Runtime.Versioning;
+// Main.cs
+namespace EOCS.Main; // namespace of this file
+using System.Runtime.Versioning; // Allow on Windows
+
+// EOCS usings
+using EOCS.SkyBox;
+using EOCS.TextRender.TextRender;
+using EOCS.ObjLoader;
+using EOCS.render;
+
+// Usings
 using OpenTK.Windowing.Desktop;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.Common;
@@ -7,28 +16,14 @@ using OpenTK.Mathematics;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
 [SupportedOSPlatform("windows")]
-class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameWindow(gSettings, nSettings)
+public class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameWindow(gSettings, nSettings)
 {
     public static bool debug_mod = false;
-    int _vertexBufferObject;
-    int _vertexArrayObject;
-    int _elementBufferObject;
-
-    string? ReadedVertFile;
-    int vertexShader;
-
-    string? ReadedFragFile;
-    int fragmentShader;
-
-    int _handle;
-
-    int _modelLoc, _viewLoc, _projLoc;
+    
     Matrix4 _model, _view, _projection;
+    bool debug_menu = false;
 
-    int _vertexCount;
-    int _indexCount;
-
-    Vector3 _camPos = new Vector3(0, 0, 60);
+    Vector3 _camPos = new Vector3(0, 20, 80);
 
     float _yaw = -90.0f;
     float _pitch = 0.0f;
@@ -39,38 +34,34 @@ class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameW
     bool _GameFullscreen = false;
     float FOV = MathHelper.PiOver4;
 
-    float _rotateObject;
-
     // Light
-    int _lightPosLoc, _lightColorLoc, _objectColorLoc;
-    Vector3 _lightPos = new Vector3(10f, 10f, 10f);
+    Vector3 _lightPos = new Vector3(10f, 15f, 10f);
 
-    Skybox? _skybox;
-
+    private Mesh? _teapotMesh;
+    private ShaderProgram? _mainShader;
+    private Skybox? _skybox;
     private TextRenderer? _textRenderer;
-
-    void CheckShaderCompilation(int shaderId)
-    {   
-        GL.GetShader(shaderId, ShaderParameter.CompileStatus, out int success);
-
-        if (success == 0)
-        {
-            string LogInfo = GL.GetShaderInfoLog(shaderId);
-            Console.WriteLine($"Shrder Error: {LogInfo}");
-        }
-    }
 
     protected override void OnLoad()
     {
         base.OnLoad();     
         Context.SwapInterval = 1;
         CursorState = CursorState.Grabbed;
-        if (_GameFullscreen) 
-            WindowState = WindowState.Fullscreen;
+        if (_GameFullscreen) WindowState = WindowState.Fullscreen;
+
         GL.Enable(EnableCap.DepthTest);
+        GL.Enable(EnableCap.Blend); // For Text
+        GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
+        // Load Models
         ObjModel model = ObjLoader.Load("./Assets/3D_objects/teapol.obj");
+        _teapotMesh = new Mesh(model.Vertices, model.Indices);
 
+        // Create Shader
+        _mainShader = new ShaderProgram("./Assets/shaders/main/shader.vert", "./Assets/shaders/main/shader.frag");
+
+        // Init another objects
+        // Sky Box
         string[] skyboxFaces = 
         {
             "./Assets/SkyBox/right.png",
@@ -80,9 +71,9 @@ class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameW
             "./Assets/SkyBox/front.png",
             "./Assets/SkyBox/back.png"
         };
-
         _skybox = new Skybox(skyboxFaces);
 
+        // Text Settings
         _textRenderer = new TextRenderer(
             "./Assets/fonts/VCR-OSD-MONO.ttf",
             32,
@@ -90,68 +81,10 @@ class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameW
             "./Assets/shaders/text/shader.frag"
         );
 
-        _vertexCount = model.Vertices.Length / 3;
-        _indexCount = model.Indices.Length;
-
-        _vertexArrayObject = GL.GenVertexArray();
-        GL.BindVertexArray(_vertexArrayObject);
-
-        _vertexBufferObject = GL.GenBuffer();
-        GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
-        GL.BufferData(BufferTarget.ArrayBuffer, 
-                      model.Vertices.Length * sizeof(float),
-                      model.Vertices,
-                      BufferUsageHint.StaticDraw
-        );
-
-        _elementBufferObject = GL.GenBuffer();
-        GL.BindBuffer(BufferTarget.ElementArrayBuffer, _elementBufferObject);
-        GL.BufferData(BufferTarget.ElementArrayBuffer, 
-                      model.Indices.Length * sizeof(uint),
-                      model.Indices,
-                      BufferUsageHint.StaticDraw);
-
-        int stride = 6 * sizeof(float);
-
-        GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, stride, 0);
-        GL.EnableVertexAttribArray(0);
-
-        GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, stride, 3 * sizeof(float));
-        GL.EnableVertexAttribArray(1);
-
-        ReadedVertFile = File.ReadAllText("./Assets/shaders/main/shader.vert");
-        vertexShader = GL.CreateShader(ShaderType.VertexShader);
-        GL.ShaderSource(vertexShader, ReadedVertFile);
-
-        ReadedFragFile = File.ReadAllText("./Assets/shaders/main/shader.frag");
-        fragmentShader = GL.CreateShader(ShaderType.FragmentShader);
-        GL.ShaderSource(fragmentShader, ReadedFragFile);
-
-        GL.CompileShader(vertexShader);
-        GL.CompileShader(fragmentShader);
-
-        CheckShaderCompilation(vertexShader);
-        CheckShaderCompilation(fragmentShader);
-
-        _handle = GL.CreateProgram();
-        GL.AttachShader(_handle, vertexShader);
-        GL.AttachShader(_handle, fragmentShader);
-        GL.LinkProgram(_handle);
-
-        GL.DeleteShader(vertexShader);
-        GL.DeleteShader(fragmentShader);
-
-        _lightPosLoc = GL.GetUniformLocation(_handle, "lightPos");
-        _lightColorLoc = GL.GetUniformLocation(_handle, "lightColor");
-        _objectColorLoc = GL.GetUniformLocation(_handle, "objectColor");
-
-        _modelLoc = GL.GetUniformLocation(_handle, "model");
-        _viewLoc = GL.GetUniformLocation(_handle, "view");
-        _projLoc = GL.GetUniformLocation(_handle, "projection");
-
+        // Initial Matrices
         _model = Matrix4.Identity;
-        _view = Matrix4.LookAt(new Vector3(0, 20, 80), Vector3.Zero, Vector3.UnitY);
-        _projection = Matrix4.CreatePerspectiveFieldOfView(FOV, Size.X / (float)Size.Y, 0.1f, 100.0f);
+        _view = Matrix4.LookAt(new Vector3(0, 0, 0), Vector3.Zero, Vector3.UnitY);
+        _projection = Matrix4.CreatePerspectiveFieldOfView(FOV, Size.X / (float)Size.Y, 0.1f, 1000.0f);
     }
 
     protected override void OnMouseMove(MouseMoveEventArgs e)
@@ -205,44 +138,54 @@ class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameW
             _GameFullscreen = !_GameFullscreen;
             if (_GameFullscreen) WindowState = WindowState.Fullscreen; else WindowState = WindowState.Normal;
         }
+        if (input.IsKeyReleased(Keys.F3)){
+            debug_menu = !debug_menu;
+        }
         
-
         Vector3 target = _camPos + front;
         _view = Matrix4.LookAt(_camPos, target, up);
 
-        _rotateObject += 0.1f;
-        _model = Matrix4.CreateTranslation(0, 0, 12) * 
-                 Matrix4.CreateRotationY(MathHelper.DegreesToRadians(_rotateObject)) * 
-                 Matrix4.CreateScale(0.1f);
+        _model = Matrix4.CreateScale(0.5f);
     }
 
     protected override void OnRenderFrame(FrameEventArgs e)
-    {
+    {   
+        // New Frame
         base.OnRenderFrame(e);
         GL.ClearColor(0.1f, 0.1f, 0.1f, 1);
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+        Vector3 front = new Vector3(-_view.M13, -_view.M23, -_view.M33);
 
+        // SkyBox
+        GL.DepthMask(false);
         _skybox!.Draw(_view, _projection);
+        GL.DepthMask(true);
 
-        GL.UseProgram(_handle);
-        
-        GL.Uniform3(_lightPosLoc, _lightPos);
-        GL.Uniform3(_lightColorLoc, new Vector3(1f, 1f, 1f));
-        GL.Uniform3(_objectColorLoc, new Vector3(1f, 0.5f, 0.31f));
 
-        GL.UniformMatrix4(_modelLoc, false, ref _model);
-        GL.UniformMatrix4(_viewLoc, false, ref _view);
-        GL.UniformMatrix4(_projLoc, false, ref _projection);
+        GL.Enable(EnableCap.DepthTest);
+        // Render Teapot
+        if (_mainShader != null && _teapotMesh != null)
+        {
+            _mainShader.Use();
 
-        GL.BindVertexArray(_vertexArrayObject);
-        GL.DrawElements(PrimitiveType.Triangles, _indexCount, DrawElementsType.UnsignedInt, IntPtr.Zero);
+            _mainShader.SetVector3("lightPos", _lightPos);
+            _mainShader.SetVector3("lightColor", Vector3.One);
+            _mainShader.SetVector3("objectColor", new Vector3(1f, 0.5f, 0.31f));
+            _mainShader.SetMatrix4("model", _model);
+            _mainShader.SetMatrix4("view", _view);
+            _mainShader.SetMatrix4("projection", _projection);
 
-        if (_textRenderer != null)
+            _teapotMesh.Draw();
+        }
+
+        // Text Render
+        if (_textRenderer != null && debug_menu)
         {
             Matrix4 ortho = Matrix4.CreateOrthographicOffCenter(0, Size.X, Size.Y, 0, -1, 1);
-            _textRenderer.DrawString("EOCS Engine V0.0.4", 10, 10, 1f, ortho, 1f); 
-            _textRenderer.DrawString("Create by Dovintc", 10, 50, 1f, ortho, 1f); 
-            _textRenderer.DrawString($"FPS: {(1.0 / e.Time):F1}", 10, 90, 1f, ortho, 1f); 
+            _textRenderer.DrawString("EOCS V0.1.0", 10, 7, 0.7f, ortho, 1f);
+            _textRenderer.DrawString($"FPS: {(1.0 / e.Time):F1}", 10, 63, 0.7f, ortho, 1f); 
+            _textRenderer.DrawString($"Position (XYZ): {_camPos.X:F1} {_camPos.Y:F1} {_camPos.Z:F1}", 10, 91, 0.7f, ortho, 1f); 
+            _textRenderer.DrawString($"Direction (Normalized): {front.X:F1}, {front.Y:F1}, {front.Z:F1}", 10, 119, 0.7f, ortho, 1f); 
         }
 
         Context.SwapBuffers();
@@ -251,19 +194,16 @@ class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameW
     protected override void OnResize(ResizeEventArgs e)
     {
         base.OnResize(e);
-
         GL.Viewport(0, 0, e.Width, e.Height);
-
-       _projection = Matrix4.CreatePerspectiveFieldOfView(FOV, Size.X / (float)Size.Y, 0.1f, 100.0f);
+       _projection = Matrix4.CreatePerspectiveFieldOfView(FOV, Size.X / (float)Size.Y, 0.1f, 1000.0f);
     }
 
     protected override void OnUnload()
     {
-        GL.DeleteBuffer(_vertexBufferObject);
-        GL.DeleteBuffer(_elementBufferObject);
-
-        GL.DeleteVertexArray(_vertexArrayObject);
-        GL.DeleteProgram(_handle);
+        _teapotMesh?.Dispose();
+        _mainShader?.Dispose();
+        _skybox?.Dispose();
+        _textRenderer?.Dispose();
 
         base.OnUnload();
     }

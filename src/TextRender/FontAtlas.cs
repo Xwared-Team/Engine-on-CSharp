@@ -1,6 +1,12 @@
-namespace EOCS;
+// TextRender/FontAtlas.cs
+namespace EOCS.TextRender.FontAtlas; // namespace of this file
+using System.Runtime.Versioning; // Allow on Windows
 
-using System.Runtime.Versioning;
+// EOCS usings
+using EOCS.TextRender.GlyghData;
+using EOCS.Main;
+
+// Usings
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;

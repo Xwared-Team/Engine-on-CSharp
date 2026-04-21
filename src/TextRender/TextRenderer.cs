@@ -1,7 +1,13 @@
-using System.Runtime.Versioning;
+// TextRender/TextReander.cs
+namespace EOCS.TextRender.TextRender; // namespace of this file
+using System.Runtime.Versioning; // Allow on Windows
+
+// EOCS usings
+using EOCS.TextRender.FontAtlas;
+
+// Usings
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
-namespace EOCS;
 
 [SupportedOSPlatform("windows")]
 public class TextRenderer : IDisposable
