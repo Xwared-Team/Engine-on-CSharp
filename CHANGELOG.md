@@ -2,6 +2,13 @@
 # All changes in project EOCS
 # Project create by Dov1ntc!
 
+## [TD-0.1.1] - 2026.04.21
+
+### Add
+- Dynamic Text Color: Implemented support for changing text color via Vector3 parameter in DrawString.
+- Invariant Culture Formatting: Fixed number formatting in debug overlay to always use dots (`.`) instead of commas (`,`) regardless of system locale.
+- Created dedicated branch text-development for experimental text features.
+
 ## [0.1.0] - 2026.04.21 (Anniversary!!!)
 
 ### Changed
@@ -9,7 +16,7 @@
 - A menu with additional information displays the position and rotation of the camera
 - Now each file is in its own namespace (render/Mesh.cs -> namespace EOCS.render)
 
-## Added
+### Added
 - New classes make it easier to create more than one object
 
 ## [0.0.7] - 2026.04.21

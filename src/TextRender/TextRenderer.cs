@@ -19,6 +19,7 @@ public class TextRenderer : IDisposable
     private readonly int _shaderProgram;
     private readonly int _locProjection;
     private readonly int _locTexture;
+    private readonly int _locColor;
 
     private readonly List<float> _vertexBuffer = new List<float>();
     
@@ -45,6 +46,7 @@ public class TextRenderer : IDisposable
         GL.UseProgram(_shaderProgram);
         _locProjection = GL.GetUniformLocation(_shaderProgram, "projection");
         _locTexture = GL.GetUniformLocation(_shaderProgram, "uTexture");
+        _locColor = GL.GetUniformLocation(_shaderProgram, "textColor");
         GL.UseProgram(0);
     }
 
@@ -118,7 +120,7 @@ public class TextRenderer : IDisposable
         AddVertex(x1, y2, 0.0f, u1, v2);
     }
 
-    public void DrawString(string text, float x, float y, float scale, Matrix4 projection, float spacing = 0.0f)
+    public void DrawString(string text, float x, float y, float scale, Matrix4 projection, Vector3 color, float spacing = 1.0f)
     {
         if (string.IsNullOrEmpty(text)) return;
 
@@ -146,6 +148,8 @@ public class TextRenderer : IDisposable
         GL.UseProgram(_shaderProgram);
         GL.UniformMatrix4(_locProjection, false, ref projection);
         
+        GL.Uniform3(_locColor, color);
+
         GL.ActiveTexture(TextureUnit.Texture0);
         GL.BindTexture(TextureTarget.Texture2D, _fontAtlas.TextureID);
         GL.Uniform1(_locTexture, 0);
@@ -155,7 +159,6 @@ public class TextRenderer : IDisposable
 
         GL.BindVertexArray(_vao);
         GL.DrawArrays(PrimitiveType.Triangles, 0, vertices.Length / 5);
-        
         
         GL.BindVertexArray(0);
         GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
