@@ -2,6 +2,18 @@
 # All changes in project EOCS
 # Project create by Dov1ntc!
 
+## [0.1.1] - 2026.04.21
+
+## [TD-0.1.1] - 2026.04.21
+
+### Add
+- Dynamic Text Color: Implemented support for changing text color via Vector3 parameter in DrawString.
+- Invariant Culture Formatting: Fixed number formatting in debug overlay to always use dots (`.`) instead of commas (`,`) regardless of system locale.
+- Created dedicated branch text-development for experimental text features.
+
+### Changed
+- Improved readability of the debug menu (in code)
+
 ## [0.1.0] - 2026.04.21 (Anniversary!!!)
 
 ### Changed
