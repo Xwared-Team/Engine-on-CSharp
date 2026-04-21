@@ -14,6 +14,7 @@ using OpenTK.Graphics.OpenGL4;
 using OpenTK.Windowing.Common;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using System.Globalization;
 
 [SupportedOSPlatform("windows")]
 public class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) : GameWindow(gSettings, nSettings)
@@ -184,8 +185,14 @@ public class Main(GameWindowSettings gSettings, NativeWindowSettings nSettings) 
             Matrix4 ortho = Matrix4.CreateOrthographicOffCenter(0, Size.X, Size.Y, 0, -1, 1);
             _textRenderer.DrawString("EOCS V0.1.0", 10, 7, 0.7f, ortho, 1f);
             _textRenderer.DrawString($"FPS: {(1.0 / e.Time):F1}", 10, 63, 0.7f, ortho, 1f); 
-            _textRenderer.DrawString($"Position (XYZ): {_camPos.X:F1} {_camPos.Y:F1} {_camPos.Z:F1}", 10, 91, 0.7f, ortho, 1f); 
-            _textRenderer.DrawString($"Direction (Normalized): {front.X:F1}, {front.Y:F1}, {front.Z:F1}", 10, 119, 0.7f, ortho, 1f); 
+            // Camera Pos
+            string posText = string.Format(CultureInfo.InvariantCulture, 
+                "Position (XYZ): {0:F1} {1:F1} {2:F1}", _camPos.X, _camPos.Y, _camPos.Z);
+            _textRenderer.DrawString(posText, 10, 91, 0.7f, ortho, 1f);
+            // Camera Direction
+            string dirText = string.Format(CultureInfo.InvariantCulture, 
+                "Direction (Normalized): {0:F1} {1:F1} {2:F1}", front.X, front.Y, front.Z);
+            _textRenderer.DrawString(dirText, 10, 119, 0.7f, ortho, 1f); 
         }
 
         Context.SwapBuffers();
