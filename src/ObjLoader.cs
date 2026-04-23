@@ -1,12 +1,5 @@
 // ObjLoader.cs
-namespace EOCS.ObjLoader; // namespace of this file
-using System.Runtime.Versioning; // Allow on Windows
-
-// Usings
-using System;
-using System.Collections.Generic;
-using System.IO;
-using OpenTK.Mathematics;
+namespace EOCS.Core;
 
 public class ObjModel
 {

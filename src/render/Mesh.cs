@@ -1,9 +1,5 @@
 // render/Mesh.cs
-namespace EOCS.render; // namespace of render folder
-using System.Runtime.Versioning; // Allow on Windows
-
-// Usings
-using OpenTK.Graphics.OpenGL4;
+namespace EOCS.Render;
 
 [SupportedOSPlatform("windows")]
 public class Mesh : IDisposable

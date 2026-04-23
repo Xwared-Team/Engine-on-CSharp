@@ -1,18 +1,5 @@
 // TextRender/FontAtlas.cs
-namespace EOCS.TextRender.FontAtlas; // namespace of this file
-using System.Runtime.Versioning; // Allow on Windows
-
-// EOCS usings
-using EOCS.TextRender.GlyghData;
-using EOCS.Main;
-
-// Usings
-using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
-using OpenTK.Graphics.OpenGL4;
-using PixelFormat = OpenTK.Graphics.OpenGL4.PixelFormat;
+namespace EOCS.TextRender;
 
 [SupportedOSPlatform("windows")]
 public class FontAtlas : IDisposable
@@ -86,15 +73,6 @@ public class FontAtlas : IDisposable
 
             currentX += size.Width + padding;
             if (size.Height > maxHeightInRow) maxHeightInRow = size.Height;
-        }
-
-        if (Main.debug_mod)
-        {
-            string outputPath = "./debug/generated_atlas.png";
-            Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
-            bitmap.Save(outputPath, ImageFormat.Png);
-            
-            Console.WriteLine($"Atlas generated with font: {family.Name}");   
         }
 
         LoadTextureToOpenGL(bitmap);

@@ -1,11 +1,5 @@
 // render/ShaderProgram.cs
-namespace EOCS.render; // namespace of render folder
-using System.Runtime.Versioning; // Allow on Windows
-
-// Usings
-using System.IO;
-using OpenTK.Graphics.OpenGL4;
-using OpenTK.Mathematics;
+namespace EOCS.Render;
 
 [SupportedOSPlatform("windows")]
 public class ShaderProgram: IDisposable

@@ -1,11 +1,4 @@
-// SkyBox.cs
-namespace EOCS.SkyBox; // namespace of this file
-using System.Runtime.Versioning; // Allow on Windows
-
-// Usings
-using System.Drawing;
-using OpenTK.Graphics.OpenGL4;
-using OpenTK.Mathematics;
+namespace EOCS.SkyBox;
 
 [SupportedOSPlatform("windows")]
 public class Skybox : IDisposable
