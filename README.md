@@ -34,7 +34,7 @@ Welcome to **EOCS**! This is a personal project aimed at creating a flexible and
 ### Steps
 1.  Clone the repository:
     ```bash
-    git clone https://github.com/dovintc-off/Engine-on-CSharp.git
+    git clone https://github.com/Xwared-Team/Engine-on-CSharp.git
     cd Engine-on-CSharp
     ```
 
