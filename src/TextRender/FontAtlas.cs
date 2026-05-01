@@ -10,7 +10,7 @@ public class FontAtlas : IDisposable
 
     private Dictionary<char, GlyphData> _glyphs = new Dictionary<char, GlyphData>();
 
-    private const string Charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 .,!?-+*/=()[]{}<>@#$%^&";
+    private const string Charset = @"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 .,!?-+*/|\=()[]{}<>@#$%^";
 
     public FontAtlas(string fontPath, int fontSize, int atlasSize = 512)
     {
@@ -74,6 +74,15 @@ public class FontAtlas : IDisposable
             currentX += size.Width + padding;
             if (size.Height > maxHeightInRow) maxHeightInRow = size.Height;
         }
+
+        string outputPath = "debug/generated_atlas.png";
+        string? dirName = Path.GetDirectoryName(outputPath);
+        if (!string.IsNullOrEmpty(dirName))
+        {
+            Directory.CreateDirectory(dirName);
+        }
+        bitmap.Save(outputPath, ImageFormat.Png);
+        Console.WriteLine($"Font atlas saved to: {outputPath}");
 
         LoadTextureToOpenGL(bitmap);
     }

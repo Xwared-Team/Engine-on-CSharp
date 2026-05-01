@@ -10,20 +10,9 @@ class Program
 {
     static void Main()
     {
-        var nativeSettings = new NativeWindowSettings()
-        {
-            ClientSize = new Vector2i(1200, 900),
-            Title = "EOCS (Engine On CSharp)",
-            APIVersion = new Version(3, 3)
-        };
-
-        var gameSettings = new GameWindowSettings()
-        {
-            UpdateFrequency = 60.0,   
-        };
-
-        var myGame = new MyGame();
-        using var engine = new Main.Main(myGame, gameSettings, nativeSettings);
+        Config.Init();
+        var userGame = new MyGame();
+        using var engine = new Main.Main(userGame);
         
         engine.Run();
     }

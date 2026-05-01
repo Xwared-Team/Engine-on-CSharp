@@ -1,9 +1,12 @@
 namespace EOCS.Script;
 
+using EOCS.SkyBox;
+
 [SupportedOSPlatform("windows")]
 public class MyGame : BaseGame
 {
     private List<GameObject> _objects = new List<GameObject>();
+    private Skybox? _skybox;
 
     public override void Load(Matrix4 initialProjection)
     {
@@ -33,6 +36,35 @@ public class MyGame : BaseGame
             LightPos = new Vector3(10f, 15f, 10f)
         };
         _objects.Add(teapot2);
+
+        var teapot3 = new GameObject(mesh, shader)
+        {
+            Position = new Vector3(-20, 20, -50), 
+            Scale = new Vector3(0.5f),
+            Color = new Vector3(0.2f, 0.8f, 0.2f),
+            LightPos = new Vector3(10f, 15f, 10f)
+        };
+        _objects.Add(teapot3);
+        
+        var teapot4 = new GameObject(mesh, shader)
+        {
+            Position = new Vector3(20, 20, -50), 
+            Scale = new Vector3(0.5f),
+            Color = new Vector3(0.8f, 0.8f, 0.2f),
+            LightPos = new Vector3(10f, 15f, 10f)
+        };
+        _objects.Add(teapot4);
+
+        string[] skyboxFaces = 
+        {
+            "./Assets/SkyBox/right.png",
+            "./Assets/SkyBox/left.png",
+            "./Assets/SkyBox/top.png",
+            "./Assets/SkyBox/bottom.png",
+            "./Assets/SkyBox/front.png",
+            "./Assets/SkyBox/back.png"
+        };
+        _skybox = new Skybox(skyboxFaces);
     }
 
     public override void Update(KeyboardState input, float deltaTime)
@@ -44,6 +76,9 @@ public class MyGame : BaseGame
     {
         if (ActiveCamera == null) return;
         Matrix4 view = ActiveCamera.GetViewMatrix();
+
+        _skybox!.Draw(view, projection);
+
         foreach (var obj in _objects)
         {
             obj.Draw(view, projection);

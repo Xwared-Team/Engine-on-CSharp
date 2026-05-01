@@ -4,29 +4,45 @@ namespace EOCS.Main;
 public class Main : GameWindow
 {
     public static bool debug_mod = false;
-
     private readonly BaseGame _userGame;
-
     Matrix4 _model, _view, _projection;
     bool debug_menu = false;
-
     bool _GamePaused = false;
     bool _GameFullscreen = false;
-
     float _initialFov = MathHelper.PiOver4;
     private TextRenderer? _textRenderer;
     private Camera? _activeCameraRef; 
 
-    public Main(BaseGame userGame, GameWindowSettings gSettings, NativeWindowSettings nSettings) 
-        : base(gSettings, nSettings)
+    public Main(BaseGame userGame) 
+        : base(
+            new GameWindowSettings() 
+            { 
+                UpdateFrequency = Config.Get<double>("UpdateFrequency", 60.0) 
+            }, 
+            new NativeWindowSettings()
+            {
+                ClientSize = new Vector2i(
+                    Config.Get<int>("WindowWidth", 1200), 
+                    Config.Get<int>("WindowHeight", 900)
+                ),
+                Title = Config.Get<string>("Title", "EOCS Engine"),
+                
+                APIVersion = new Version(
+                    Config.Get<int>("ApiMajor", 3), 
+                    Config.Get<int>("ApiMinor", 3)
+                )
+            })
     {
         _userGame = userGame;
     }
 
     protected override void OnLoad()
     {
-        base.OnLoad();     
-        Context.SwapInterval = 1;
+        base.OnLoad(); 
+
+        bool vsync = Config.Get<bool>("VSync", false);
+        this.VSync = vsync ? VSyncMode.On : VSyncMode.Off;
+
         CursorState = CursorState.Grabbed;
         if (_GameFullscreen) WindowState = WindowState.Fullscreen;
 
@@ -106,25 +122,25 @@ public class Main : GameWindow
 
         if (_textRenderer != null && debug_menu && _activeCameraRef != null)
         {
+            float TS = 0.5f;
             Matrix4 ortho = Matrix4.CreateOrthographicOffCenter(0, Size.X, Size.Y, 0, -1, 1);
             
-            _textRenderer.DrawString("EOCS V0.2.0", 10, 7, 0.7f, ortho, Colors.White, 1f);
-            _textRenderer.DrawString($"FPS: {1.0 / e.Time:F1}", 10, 63, 0.7f, ortho, Colors.White, 1f); 
+            _textRenderer.DrawString("EOCS V0.2.0", 10, 7, TS, ortho, Colors.White, 2f);
+            _textRenderer.DrawString($"FPS: {1.0 / e.Time:F1}", 10, 63, TS, ortho, Colors.White, 1f); 
             
             string posText = string.Format(CultureInfo.InvariantCulture, 
                 "Pos: {0:F1} {1:F1} {2:F1} | FOV: {3}", 
 
                 _activeCameraRef.Position.X, _activeCameraRef.Position.Y, _activeCameraRef.Position.Z, 
                 MathHelper.RadiansToDegrees(_activeCameraRef!.FOV));
-            _textRenderer.DrawString(posText, 10, 91, 0.7f, ortho, Colors.White, 1f);
+            _textRenderer.DrawString(posText, 10, 91, TS, ortho, Colors.White, 1f);
 
             string dirText = string.Format(CultureInfo.InvariantCulture, 
                 "Dir: {0:F1} {1:F1} {2:F1}", 
                 _activeCameraRef.Front.X, _activeCameraRef.Front.Y, _activeCameraRef.Front.Z);
-            _textRenderer.DrawString(dirText, 10, 119, 0.7f, ortho, Colors.White, 1f); 
+            _textRenderer.DrawString(dirText, 10, 119, TS, ortho, Colors.White, 1f); 
 
         }
-
         Context.SwapBuffers();
     }
 

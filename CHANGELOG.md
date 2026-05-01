@@ -2,7 +2,12 @@
 # All changes in project EOCS
 # Project create by Dov1ntc!
 
-## [0.2.0] - 2026-04-24
+## [2.0.1] - 2026.04-30
+### Added
+- "|" and "\" symbol 
+- Config File
+
+## [0.2.0] - 2026.04.24
 ### Added
 - Engine architecture: The basic structure of the engine has been implemented, divided into “Core” (Main.cs) and “Game Content” (GameBase.cs / Script.cs).
 - Scene System: Added abstract class BaseGame with lifecycle methods Load(), Update() and Draw().

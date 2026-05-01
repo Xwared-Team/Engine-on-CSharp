@@ -1,3 +1,4 @@
+// camera.cs
 namespace EOCS.Core;
 
 using OpenTK.Mathematics;
