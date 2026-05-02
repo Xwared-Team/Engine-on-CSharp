@@ -1,5 +1,6 @@
 {
     "CanF3": false,
     "VSync": false,
-    "Title": "game"
+    "Title": "Engine On CSharp Test 2.0.1",
+    "ConsoleHistoryLenght": 100
 }

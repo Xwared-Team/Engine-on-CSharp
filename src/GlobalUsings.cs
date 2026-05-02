@@ -16,3 +16,6 @@ global using EOCS.Render;
 global using EOCS.TextRender.TextRender;
 global using EOCS.Utils.Colors;
 global using EOCS.ConfigManager;
+global using EOCS.GameConsole;
+global using EOCS.PrimitiveFigures._2D.Primitive2D_AbstractClass;
+global using EOCS.PrimitiveFigures._2D;

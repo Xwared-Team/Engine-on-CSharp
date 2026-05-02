@@ -2,7 +2,20 @@
 # All changes in project EOCS
 # Project create by Dov1ntc!
 
-## [2.0.1] - 2026.04-30
+## [2.0.2-alpha] - 2026.03.05
+
+### Added
+- Developer Console: Implemented the core `GameConsole` class with history logging and file persistence.
+- Console Toggle: Added key binding for the Grave Accent key (`~` / `` ` ``) to open and close the console overlay.
+- 2D Primitive System: 
+    - Introduced abstract base class `Primitive2D` for handling 2D geometry rendering.
+    - Implemented `Square` class as the first concrete primitive, supporting position, scale, rotation, and color customization.
+
+### Fixed
+- Resolved various initialization and rendering issues in the graphics pipeline.
+- Fixed shader compilation errors related to uniform location binding.
+
+## [2.0.1] - 2026.04.30
 ### Added
 - "|" and "\" symbol 
 - Config File

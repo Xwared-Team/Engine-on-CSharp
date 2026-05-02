@@ -10,7 +10,7 @@ public class FontAtlas : IDisposable
 
     private Dictionary<char, GlyphData> _glyphs = new Dictionary<char, GlyphData>();
 
-    private const string Charset = @"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 .,!?-+*/|\=()[]{}<>@#$%^";
+    private const string Charset = @"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 .,!?-+*/|\=()[]{}<>@#$%^АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя";
 
     public FontAtlas(string fontPath, int fontSize, int atlasSize = 512)
     {
@@ -56,7 +56,7 @@ public class FontAtlas : IDisposable
             
             if (currentY + size.Height > Height)
             {
-                Console.WriteLine($"Warning: Font atlas overflow! Не влез символ '{c}'");
+                Console.WriteLine($"[FontAtlas.cs:59] Warning: Font atlas overflow! Symbol: '{c}'");
                 break;
             }
 
@@ -82,7 +82,7 @@ public class FontAtlas : IDisposable
             Directory.CreateDirectory(dirName);
         }
         bitmap.Save(outputPath, ImageFormat.Png);
-        Console.WriteLine($"Font atlas saved to: {outputPath}");
+        Console.WriteLine($"[FontAtlas.cs:85] Font atlas saved to: {outputPath}");
 
         LoadTextureToOpenGL(bitmap);
     }

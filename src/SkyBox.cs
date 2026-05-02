@@ -52,7 +52,7 @@ public class Skybox : IDisposable
         GL.GetShader(vertShader, ShaderParameter.CompileStatus, out int vSuccess);
         if (vSuccess == 0)
         {
-            Console.WriteLine("[Skybox] Vertex Shader Error: " + GL.GetShaderInfoLog(vertShader));
+            Console.WriteLine("[Skybox.cs:55] Vertex Shader Error: " + GL.GetShaderInfoLog(vertShader));
         }
 
         int fragShader = GL.CreateShader(ShaderType.FragmentShader);
@@ -62,7 +62,7 @@ public class Skybox : IDisposable
         GL.GetShader(fragShader, ShaderParameter.CompileStatus, out int fSuccess);
         if (fSuccess == 0)
         {
-            Console.WriteLine("[Skybox] Fragment Shader Error: " + GL.GetShaderInfoLog(fragShader));
+            Console.WriteLine("[Skybox.cs:65] Fragment Shader Error: " + GL.GetShaderInfoLog(fragShader));
         }
 
         _shaderProgram = GL.CreateProgram();
@@ -73,7 +73,7 @@ public class Skybox : IDisposable
         GL.GetProgram(_shaderProgram, GetProgramParameterName.LinkStatus, out int lSuccess);
         if (lSuccess == 0)
         {
-            Console.WriteLine("[Skybox] Link Error: " + GL.GetProgramInfoLog(_shaderProgram));
+            Console.WriteLine("[Skybox.cs:76] Link Error: " + GL.GetProgramInfoLog(_shaderProgram));
         }
 
         GL.DeleteShader(vertShader);
@@ -110,7 +110,7 @@ public class Skybox : IDisposable
             {
                 if (!File.Exists(faces[i]))
                 {
-                    Console.WriteLine($"[Skybox] ERROR: File not found: {faces[i]}");
+                    Console.WriteLine($"[Skybox.cs:113] Error: File not found: {faces[i]}");
                     GL.TexImage2D(TextureTarget.TextureCubeMapPositiveX + i, 0, PixelInternalFormat.Rgb, 1, 1, 0, PixelFormat.Rgb, PixelType.UnsignedByte, IntPtr.Zero);
                     continue;
                 }
@@ -150,7 +150,7 @@ public class Skybox : IDisposable
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[Skybox] Error loading face {i} ({faces[i]}): {ex.Message}");
+                Console.WriteLine($"[Skybox.cs:153] Error: loading face {i} ({faces[i]}): {ex.Message}");
                 GL.TexImage2D(TextureTarget.TextureCubeMapPositiveX + i, 0, PixelInternalFormat.Rgb, 1, 1, 0, PixelFormat.Rgb, PixelType.UnsignedByte, IntPtr.Zero);
             }
         }
@@ -168,7 +168,7 @@ public class Skybox : IDisposable
         GL.GetShader(shader, ShaderParameter.CompileStatus, out int success);
         if (success == 0)
         {
-            Console.WriteLine($"[Skybox] {type} Error: {GL.GetShaderInfoLog(shader)}");
+            Console.WriteLine($"[Skybox.cs:171] {type} Error: {GL.GetShaderInfoLog(shader)}");
         }
     }
 

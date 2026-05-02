@@ -1,5 +1,6 @@
 namespace EOCS.Script;
 
+using EOCS.Main;
 using EOCS.SkyBox;
 
 [SupportedOSPlatform("windows")]
@@ -67,9 +68,9 @@ public class MyGame : BaseGame
         _skybox = new Skybox(skyboxFaces);
     }
 
-    public override void Update(KeyboardState input, float deltaTime)
+    public override void Update(FrameUpdateVars FUV)
     {
-        base.Update(input, deltaTime);
+        base.Update(FUV);
     }
 
     public override void Draw(Matrix4 projection)

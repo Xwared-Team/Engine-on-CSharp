@@ -12,11 +12,12 @@ public class Main : GameWindow
     float _initialFov = MathHelper.PiOver4;
     private TextRenderer? _textRenderer;
     private Camera? _activeCameraRef; 
+    private GameConsole.GameConsole? gameConsole;
 
     public Main(BaseGame userGame) 
         : base(
             new GameWindowSettings() 
-            { 
+            {
                 UpdateFrequency = Config.Get<double>("UpdateFrequency", 60.0) 
             }, 
             new NativeWindowSettings()
@@ -39,6 +40,8 @@ public class Main : GameWindow
     protected override void OnLoad()
     {
         base.OnLoad(); 
+
+        gameConsole = new GameConsole.GameConsole();
 
         bool vsync = Config.Get<bool>("VSync", false);
         this.VSync = vsync ? VSyncMode.On : VSyncMode.Off;
@@ -63,7 +66,7 @@ public class Main : GameWindow
         _userGame.Load(_projection);
 
         _activeCameraRef = _userGame.ActiveCamera;
-        
+
         if (_activeCameraRef == null)
         {
             _activeCameraRef = new Camera(new Vector3(0, 5, 10), -90.0f, 0.0f);
@@ -75,13 +78,16 @@ public class Main : GameWindow
 
     protected override void OnMouseMove(MouseMoveEventArgs e)
     {
-        base.OnMouseMove(e);
-        if (CursorState != CursorState.Grabbed) return;
 
-        if (_activeCameraRef != null)
-        {
-            _activeCameraRef.ProcessMouseMovement(e.DeltaX, e.DeltaY);
-            _view = _activeCameraRef.GetViewMatrix();
+        if (!gameConsole.IsOpen){
+            base.OnMouseMove(e);
+            if (CursorState != CursorState.Grabbed) return;
+
+            if (_activeCameraRef != null)
+            {
+                _activeCameraRef.ProcessMouseMovement(e.DeltaX, e.DeltaY);
+                _view = _activeCameraRef.GetViewMatrix();
+            }
         }
     }
 
@@ -89,43 +95,53 @@ public class Main : GameWindow
     {
         base.OnUpdateFrame(e);
 
-        var input = KeyboardState;
+        KeyboardState input = KeyboardState;
+        MouseState mouse = MouseState;
+        gameConsole?.ProcessInput(input);
 
-        if (input.IsKeyReleased(Keys.Escape)){
-            _GamePaused = !_GamePaused;
-            CursorState = _GamePaused ? CursorState.Normal : CursorState.Grabbed;
+        if (!gameConsole.IsOpen){
+            if (input.IsKeyReleased(Keys.Escape)){
+                _GamePaused = !_GamePaused;
+                CursorState = _GamePaused ? CursorState.Normal : CursorState.Grabbed;
+            }
+            if (input.IsKeyReleased(Keys.F11)){
+                _GameFullscreen = !_GameFullscreen;
+                WindowState = _GameFullscreen ? WindowState.Fullscreen : WindowState.Normal;
+            }
+            if (input.IsKeyReleased(Keys.F3)) debug_menu = !debug_menu;
+
+            var FUV = new FrameUpdateVars(input, mouse, (float)e.Time);
+            _userGame.Update(FUV);
+
+            if (_userGame.ActiveCamera != null)
+            {
+                _activeCameraRef = _userGame.ActiveCamera;
+                _view = _activeCameraRef.GetViewMatrix();
+            }
+
+            _model = Matrix4.Identity;
         }
-        if (input.IsKeyReleased(Keys.F11)){
-            _GameFullscreen = !_GameFullscreen;
-            WindowState = _GameFullscreen ? WindowState.Fullscreen : WindowState.Normal;
-        }
-        if (input.IsKeyReleased(Keys.F3)) debug_menu = !debug_menu;
-
-        _userGame.Update(input, (float)e.Time);
-
-        if (_userGame.ActiveCamera != null)
-        {
-            _activeCameraRef = _userGame.ActiveCamera;
-            _view = _activeCameraRef.GetViewMatrix();
-        }
-
-        _model = Matrix4.Identity;
     }
 
     protected override void OnRenderFrame(FrameEventArgs e)
     {   
         base.OnRenderFrame(e);
+
         GL.ClearColor(0, 0, 0, 1);
         GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-
         _userGame.Draw(_projection);
+
+        if (gameConsole.IsOpen)
+        {
+            gameConsole.DrawConsole(Size.X, Size.Y);
+        } 
 
         if (_textRenderer != null && debug_menu && _activeCameraRef != null)
         {
             float TS = 0.5f;
             Matrix4 ortho = Matrix4.CreateOrthographicOffCenter(0, Size.X, Size.Y, 0, -1, 1);
             
-            _textRenderer.DrawString("EOCS V0.2.0", 10, 7, TS, ortho, Colors.White, 2f);
+            _textRenderer.DrawString($"EOCS V0.2.0 {gameConsole?.IsOpen}", 10, 7, TS, ortho, Colors.White, 2f);
             _textRenderer.DrawString($"FPS: {1.0 / e.Time:F1}", 10, 63, TS, ortho, Colors.White, 1f); 
             
             string posText = string.Format(CultureInfo.InvariantCulture, 
@@ -162,11 +178,29 @@ public class Main : GameWindow
     protected override void OnMouseWheel(MouseWheelEventArgs e)
     {
         base.OnMouseWheel(e);
+        if (!gameConsole.IsOpen){
+            if (_activeCameraRef != null)
+            {
+                _activeCameraRef.ProcessMouseScroll(e.OffsetY);
+                _projection = Matrix4.CreatePerspectiveFieldOfView(_activeCameraRef.FOV, Size.X / (float)Size.Y, 0.1f, 100.0f);
+            }
+        } 
+    }
+}
 
-        if (_activeCameraRef != null)
-        {
-            _activeCameraRef.ProcessMouseScroll(e.OffsetY);
-            _projection = Matrix4.CreatePerspectiveFieldOfView(_activeCameraRef.FOV, Size.X / (float)Size.Y, 0.1f, 100.0f);
-        }
+// Helper Classes
+
+public class FrameUpdateVars
+{
+    public KeyboardState Keyboard { get; private set; }
+    public MouseState Mouse { get; private set; }
+
+    public float DeltaTime { get; private set; }
+
+    public FrameUpdateVars(KeyboardState keyboard, MouseState mouse, float deltaTime)
+    {
+        Keyboard = keyboard;
+        Mouse = mouse;
+        DeltaTime = deltaTime;
     }
 }

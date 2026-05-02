@@ -16,7 +16,7 @@ public class ShaderProgram: IDisposable
     public ShaderProgram(string vertPath, string fragPath)
     {
         if (!File.Exists(vertPath) || !File.Exists(fragPath)){
-            Console.WriteLine("[Shader Error]: vertex and fragment shader file not exist (shaderProgramm.cs:18)"); 
+            Console.WriteLine("[ShaderProgram.cs:19]: Error: Vertex and fragment shader file not exist (shaderProgramm.cs:18)"); 
             throw new FileNotFoundException();
         }
 
@@ -65,14 +65,14 @@ public class ShaderProgram: IDisposable
     {   
         GL.GetShader(shaderId, ShaderParameter.CompileStatus, out int success);
         if (success == 0)
-            throw new Exception($"[Shader Error]: {GL.GetShaderInfoLog(shaderId)}");
+            throw new Exception($"[ShaderProgram] Shader Error: {GL.GetShaderInfoLog(shaderId)}");
     }
 
     public void CheckShaderLink()
     {
         GL.GetProgram(_handle, GetProgramParameterName.LinkStatus, out int success);
         if (success == 0)
-            throw new Exception($"[Link Error]: {GL.GetProgramInfoLog(_handle)}");
+            throw new Exception($"[ShaderProgram] Link Error: {GL.GetProgramInfoLog(_handle)}");
     }
 
     public void SetVector3(string name, Vector3 vector){GL.Uniform3(_uniformLocations[name], vector);}

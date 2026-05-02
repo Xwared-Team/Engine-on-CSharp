@@ -1,3 +1,5 @@
+using EOCS.Main;
+
 namespace EOCS.Base;
 
 [SupportedOSPlatform("windows")]
@@ -10,9 +12,9 @@ public abstract class BaseGame
         if (ActiveCamera == null)
             ActiveCamera = new Camera(new Vector3(0, 5, 10), -90.0f, 0.0f);
     }
-    public virtual void Update(KeyboardState input, float deltaTime) 
+    public virtual void Update(FrameUpdateVars FUV) 
     {
-        ActiveCamera?.ProcessInput(input, deltaTime);
+        ActiveCamera?.ProcessInput(FUV.Keyboard, FUV.DeltaTime);
     }
     public virtual void Draw(Matrix4 projection){}
 }

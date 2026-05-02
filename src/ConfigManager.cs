@@ -1,5 +1,9 @@
 namespace EOCS.ConfigManager;
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Runtime.Versioning;
 using System.Text.Json;
 
 [SupportedOSPlatform("windows")]
@@ -18,7 +22,7 @@ public class ConfigManager
     {
         if (!File.Exists(_filePath))
         {
-            Console.WriteLine($"[Config] File '{_filePath}' not found. Creating default empty config.");
+            Console.WriteLine($"[ConfigManager.cs:25] File '{_filePath}' not found. Creating default empty config.");
             Save();
             return;
         }
@@ -44,11 +48,11 @@ public class ConfigManager
                 }
             }
             
-            Console.WriteLine("[Config] Loaded successfully.");
+            Console.WriteLine("[ConfigManager.cs:51] Loaded successfully.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[Config] Error loading file: {ex.Message}");
+            Console.WriteLine($"[ConfigManager.cs:55] Error loading file: {ex.Message}");
         }
     }
 
@@ -63,9 +67,9 @@ public class ConfigManager
         File.WriteAllText(_filePath, json);
     }
 
-    public T Get<T>(string key, T defaultValue = default)
+    public T Get<T>(string key, T defaultValue = default!)
     {
-        if (_settings.TryGetValue(key, out object value))
+        if (_settings.TryGetValue(key, out object? value))
         {
             try
             {
@@ -73,11 +77,11 @@ public class ConfigManager
                 {
                     return typedValue;
                 }
-                return (T)Convert.ChangeType(value, typeof(T));
+                return (T)Convert.ChangeType(value, typeof(T))!;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[Config] Type mismatch for key '{key}'. Expected {typeof(T)}, got {value.GetType()}. Error: {ex.Message}");
+                Console.WriteLine($"[ConfigManager.cs:84] Type mismatch for key '{key}'. Expected {typeof(T)}, got {value.GetType()}. Error: {ex.Message}");
                 return defaultValue;
             }
         }
@@ -92,17 +96,17 @@ public class ConfigManager
         switch (element.ValueKind)
         {
             case JsonValueKind.String:
-                return element.GetString();
+                return element.GetString() ?? string.Empty;
             case JsonValueKind.Number:
                 if (element.TryGetInt32(out int i)) return i;
                 if (element.TryGetInt64(out long l)) return l;
                 if (element.TryGetDouble(out double d)) return d;
-                return element.GetDouble(); // Fallback
+                return element.GetDouble();
             case JsonValueKind.True:
             case JsonValueKind.False:
                 return element.GetBoolean();
             case JsonValueKind.Null:
-                return null;
+                return DBNull.Value;
             default:
                 return element.GetRawText(); 
         }
